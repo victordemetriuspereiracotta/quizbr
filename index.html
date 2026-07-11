@@ -277,6 +277,15 @@
   .modal .m-price{font-family:'Sora';font-weight:800;font-size:30px;color:var(--emerald-deep);margin-bottom:14px;}
   .modal .m-price small{font-size:14px;color:var(--ink-soft);font-family:'Plus Jakarta Sans';font-weight:600;}
 </style>
+<!-- Google Analytics 4 (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NSSQ773B4N"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-NSSQ773B4N');
+</script>
+<!-- End Google Analytics 4 -->
 </head>
 <body>
 <div class="wrap">
@@ -417,13 +426,25 @@ function loadState(){
   }catch(e){}
 })();
 
-/* ---------------- LEAD EVENTS (webhook) ---------------- */
-function sendEvent(ev){
-  if(!CONFIG.webhookUrl) return;
-  try{
-    fetch(CONFIG.webhookUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({event:ev, ts:new Date().toISOString(), page:location.href, ...answers})});
-  }catch(e){}
+/* ---------------- LEAD EVENTS (GA4 + webhook) ---------------- */
+// Monta parâmetros SEM dados pessoais (Google não permite PII no GA4)
+function gaSafeParams(){
+  const p={};
+  if(answers.utm){ for(const k in answers.utm){ p[k]=answers.utm[k]; } }
+  ['q1','q2','q3','q4','q5','q6','q7','futurepace'].forEach(k=>{ if(answers[k]) p[k]=answers[k]; });
+  return p;
+}
+function sendEvent(ev, extra){
+  extra = extra || {};
+  // Google Analytics 4 (sem nome/whatsapp/email)
+  try{ if(typeof gtag==='function'){ gtag('event', ev, Object.assign(gaSafeParams(), extra)); } }catch(e){}
+  // Webhook opcional (dados completos, se você configurar CONFIG.webhookUrl)
+  if(CONFIG.webhookUrl){
+    try{
+      fetch(CONFIG.webhookUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({event:ev, ts:new Date().toISOString(), page:location.href, ...answers, ...extra})});
+    }catch(e){}
+  }
 }
 
 /* ---------------- RENDER CORE ---------------- */
@@ -578,6 +599,7 @@ function renderQuestion(id, q){
     b.classList.add('selected');
     answers[id]=b.dataset.v;
     saveState();
+    sendEvent('quiz_answer', {step:id, choice:b.dataset.v});
     setTimeout(next,340);
   });
 }
@@ -646,7 +668,7 @@ function renderFuturepace(){
   </div>`;
   screen.querySelectorAll('.img-opt').forEach(b=>b.onclick=()=>{
     if(screen.querySelector('.img-opt.selected')) return;
-    b.classList.add('selected'); answers.futurepace=b.dataset.v; saveState(); setTimeout(next,360);
+    b.classList.add('selected'); answers.futurepace=b.dataset.v; saveState(); sendEvent('quiz_answer',{step:'futurepace',choice:b.dataset.v}); setTimeout(next,360);
   });
 }
 
@@ -695,6 +717,7 @@ function renderCapture(){
     e.target.value=v;
   });
   document.getElementById('send').onclick=submitCapture;
+  sendEvent('capture_view');
 }
 
 function submitCapture(){
