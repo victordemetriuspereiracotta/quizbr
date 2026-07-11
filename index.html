@@ -310,8 +310,8 @@
     <h3 id="mTitle">Antes de sair…</h3>
     <p>Se o plano completo não cabe no bolso hoje, leva a <b>versão Lite</b>: só o essencial para fazer sua primeira avaliação paga ainda esta semana.</p>
     <div class="m-price">R$ 19,90 <small>· pagamento único</small></div>
-    <button class="btn pulse" id="mDown">Quero a versão Lite &rarr;</button>
-    <button class="btn ghost" id="mStay">Prefiro o plano completo por R$37,90</button>
+    <button class="btn pulse" id="mDown">Quero a versão Lite por R$19,90 &rarr;</button>
+    <button class="btn ghost" id="mWpp">Ainda com dúvida? Receber meu plano no WhatsApp</button>
   </div>
 </div>
 
@@ -320,9 +320,10 @@
    1) CONFIGURE ESTAS LINHAS
    ============================================================ */
 const CONFIG = {
-  whatsappNumber: "5531999999999",                 // seu WhatsApp (só números, com 55 + DDD)
+  whatsappNumber: "5531999199269",                 // seu WhatsApp (só números, com 55 + DDD)
   checkoutUrl:    "https://checkout4.xgrow.com/pt/62c4ee26-e498-4259-b746-5965851a8947/OTYxMjc=",   // checkout principal (R$37,90)
   downsellUrl:    "https://checkout4.xgrow.com/pt/62c4ee26-e498-4259-b746-5965851a8947/MTA1MjAx",   // checkout da versão Lite (R$19,90) — modal de saída ativo
+  whatsappKeyword: "QUERO MEU PLANO",               // palavra-chave que dispara o flow no ManyChat (mensagem pré-preenchida do wa.me)
   webhookUrl:     "",                               // webhook p/ armazenar leads (ManyChat / Apps Script / Make). Vazio = leads só no checkout
   checkoutParamName:  "fn",
   checkoutParamEmail: "em",
@@ -737,7 +738,7 @@ function submitCapture(){
 const META_NUM={ate1000:1000,"1000-2500":2500,"2500-5000":5000,"5000+":7000};
 const META_SHORT={ate1000:"R$1.000","1000-2500":"R$2.500","2500-5000":"R$5.000","5000+":"R$5.000+"};
 const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
-function monthsOut(t){ if(t==="30min")return 4; if(t==="1h")return 3; return 2; }
+function weeksOut(t){ if(t==="30min")return 3; if(t==="1h")return 2; return 1; }
 function idxScenario(t){ if(t==="30min")return 0; if(t==="1h")return 1; return 2; }
 
 function renderResult(){
@@ -747,8 +748,8 @@ function renderResult(){
   const tempo = TEMPO_LBL[answers.q4] || "alguns minutos por dia";
   const tentou = answers.q5==="tentei";
   const hl = idxScenario(answers.q4);
-  const mOut = monthsOut(answers.q4);
-  const endMonth = MESES[(new Date().getMonth()+mOut)%12];
+  const wOut = weeksOut(answers.q4);
+  const wLbl = wOut===1 ? "1 semana" : `${wOut} semanas`;
   const objBlock = tentou ? `<div class="res-obj">Se você já tentou e não deu certo, o problema nunca foi você — foi a falta de um mecanismo validado. É exatamente isso que muda aqui.</div>`:'';
 
   const scenRows = [
@@ -761,7 +762,7 @@ function renderResult(){
   <div class="result">
     <div class="res-head">
       <div class="tag">Seu plano personalizado</div>
-      <h2>${nome}, dedicando <b>${tempo}</b>, sua projeção aponta para a faixa de <b>${meta}</b> por mês até <b>${endMonth}</b>.</h2>
+      <h2>${nome}, dedicando <b>${tempo}</b>, sua projeção aponta para a faixa de <b>${meta}</b> por mês em cerca de <b>${wLbl}</b>.</h2>
       ${objBlock}
     </div>
 
@@ -775,7 +776,7 @@ function renderResult(){
           <text x="30" y="164" text-anchor="end" font-family="Plus Jakarta Sans" font-size="10" fill="#8AA295">R$0</text>
           <text x="30" y="56" text-anchor="end" font-family="Plus Jakarta Sans" font-size="10" fill="#0B7A4B" font-weight="700">${metaShort}</text>
           <text x="44" y="177" font-family="Plus Jakarta Sans" font-size="10.5" fill="#8AA295">hoje</text>
-          <text x="298" y="177" text-anchor="end" font-family="Sora" font-weight="700" font-size="10.5" fill="#064E30">${endMonth}</text>
+          <text x="298" y="177" text-anchor="end" font-family="Sora" font-weight="700" font-size="10.5" fill="#064E30">${wLbl}</text>
           <path id="projArea" d="M40 156 C 110 150, 170 118, 230 78 S 288 54, 296 52 L 296 160 L 40 160 Z" fill="#0B7A4B" opacity="0" />
           <path id="projPath" d="M40 156 C 110 150, 170 118, 230 78 S 288 54, 296 52" fill="none" stroke="#0B7A4B" stroke-width="3.5" stroke-linecap="round"/>
           <circle id="projDot" cx="296" cy="52" r="6" fill="#0B7A4B" opacity="0"/>
@@ -963,10 +964,18 @@ function setupExitIntent(nome){
     sendEvent('downsell_click');
     window.location.href=buildCheckoutUrl(CONFIG.downsellUrl);
   };
-  document.getElementById('mStay').onclick=()=>{
-    document.getElementById('modalOv').classList.remove('show');
-    const ob=document.getElementById('offerBox'); if(ob) ob.scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('mWpp').onclick=()=>{
+    sendEvent('whatsapp_optin');
+    window.location.href=buildWhatsappUrl();
   };
+}
+
+/* ---------------- WHATSAPP OPT-IN (wa.me + palavra-chave) ---------------- */
+function buildWhatsappUrl(){
+  const kw = CONFIG.whatsappKeyword || "QUERO MEU PLANO";
+  const nome = answers.name ? ` Aqui é ${answers.name}.` : "";
+  const txt = encodeURIComponent(`${kw}.${nome}`);
+  return `https://wa.me/${CONFIG.whatsappNumber}?text=${txt}`;
 }
 
 /* ---------------- BOOT ---------------- */
