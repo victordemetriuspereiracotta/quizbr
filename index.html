@@ -7,7 +7,8 @@
 <title>AvaliaDólar Express — Descubra quanto você pode receber em dólar avaliando IA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet"></noscript>
 <style>
   /* ============================================================
      V4 — CONFIGURE NO <script> AO FINAL (CONFIG)
@@ -141,7 +142,7 @@
 
   /* ---------- TESTIMONIAL ---------- */
   .testi-card{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);margin-top:8px;}
-  .testi-card img{width:100%;display:block;}
+  .testi-card img{width:100%;height:auto;display:block;}
   .testi-cap{padding:14px 16px;background:var(--mint);font-weight:600;font-size:14px;color:var(--emerald-deep);
     display:flex;gap:9px;align-items:center;}
 
@@ -245,7 +246,7 @@
 
   .testis{padding:24px 22px 0;}
   .tcard{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:14px;box-shadow:var(--shadow-sm);}
-  .tcard img{width:100%;display:block;}
+  .tcard img{width:100%;height:auto;display:block;}
   .tcard .q{padding:14px 16px;font-size:14px;}
   .tcard .q b{color:var(--emerald-deep);}
 
@@ -332,17 +333,16 @@ const CONFIG = {
 /* ============================================================ */
 
 const IMG = {
-  cover:       "https://i.ibb.co/Y4d36bW0/Chat-GPT-Image-Aug-27-2025-03-36-30-PM.webp",
-  proof:       "https://i.ibb.co/NdLkszbW/Screen-Shot-2026-04-22-at-15-07-33.webp",
-  testJonata:  "https://i.ibb.co/JF5DFm27/IMG-4380-2.webp",
-  testUeliton: "https://i.ibb.co/RkQLqk22/IMG-3707-3.webp",
-  testPedro:   "https://i.ibb.co/Gf2TChth/Screen-Shot-2026-04-22-at-15-46-42.webp",
-  testPedro2:  "https://i.ibb.co/cSNH0fqM/IMG-3757.webp",
-  payContas:   "https://i.ibb.co/DHmjWGty/Screen-Shot-2026-04-22-at-15-33-16.webp",
-  sonhos:      "https://i.ibb.co/zHDwDVVn/Screen-Shot-2026-04-22-at-15-33-35.webp",
-  bonus1:      "https://i.ibb.co/KjkFkbnK/Screen-Shot-2026-04-22-at-15-42-12.webp",
-  bonus2:      "https://i.ibb.co/xK3D674C/Screen-Shot-2026-04-22-at-15-45-28.webp",
-  bonus3:      "https://i.ibb.co/rRr9Kv0V/Screen-Shot-2026-04-22-at-15-45-56.webp"
+  comoFunciona: "img/como-funciona.webp",   // infográfico: como o método funciona
+  jonata:       "img/jonata.webp",          // DM do Jonata Bessa ($500/semana Outlier)
+  ueliton:      "img/ueliton.webp",         // WhatsApp do Uéliton (+700 dólares Outlier)
+  pedro:        "img/pedro.webp",           // WhatsApp do Pedro Ramos (8-14k/mês)
+  selos:        "img/selos.webp",           // selos: compra segura / satisfação / privacidade
+  contas:       "img/contas.webp",          // future pace: pagar contas
+  sonhos:       "img/sonhos.webp",          // future pace: realizar sonho
+  entregaveis:  "img/entregaveis.webp",     // checklist "tudo que você vai receber"
+  beneficios:   "img/beneficios.webp",      // 4 blocos de benefícios
+  preco:        "img/preco.webp"            // card R$197 -> R$37,90
 };
 
 const ck = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -645,9 +645,7 @@ function renderTestimonial(){
     <div class="eyebrow">&#128293; Histórias reais de transformação</div>
     <h2 class="q-title">Quem já está recebendo avaliando IA</h2>
     <div class="testi-card">
-      <img src="${IMG.testJonata}" alt="Depoimento de Jonata Bessa" loading="eager"
-           referrerpolicy="no-referrer"
-           onerror="this.onerror=null;this.src='${IMG.testUeliton}';">
+      <img src="${IMG.jonata}" alt="Depoimento de Jonata Bessa" loading="eager" width="880" height="461" decoding="async">
       <div class="testi-cap">${ckGreen} Jonata Bessa — aluno do AvaliaDólar Express</div>
     </div>
     <div class="spacer"></div>
@@ -663,8 +661,8 @@ function renderFuturepace(){
     <h2 class="q-title">Imagine que o primeiro pagamento em dólar caiu na sua conta.</h2>
     <p class="q-sub">O que você faria primeiro?</p>
     <div class="img-opts">
-      <div class="img-opt" data-v="contas"><img src="${IMG.payContas}" alt="Pagar contas" loading="lazy"><span>Pagar minhas contas</span></div>
-      <div class="img-opt" data-v="sonhos"><img src="${IMG.sonhos}" alt="Realizar sonhos" loading="lazy"><span>Realizar um sonho</span></div>
+      <div class="img-opt" data-v="contas"><img src="${IMG.contas}" alt="Pagar contas" loading="lazy" width="544" height="544" decoding="async"><span>Pagar minhas contas</span></div>
+      <div class="img-opt" data-v="sonhos"><img src="${IMG.sonhos}" alt="Realizar sonhos" loading="lazy" width="542" height="544" decoding="async"><span>Realizar um sonho</span></div>
     </div>
   </div>`;
   screen.querySelectorAll('.img-opt').forEach(b=>b.onclick=()=>{
@@ -704,7 +702,7 @@ function renderCapture(){
   <div class="step cap">
     <div class="seal">${ckGreen.replace('width="13" height="13"','width="26" height="26"')}</div>
     <h2>Seu Plano AvaliaDólar está pronto</h2>
-    <p>Vamos liberar ele agora no seu WhatsApp — junto com o passo a passo das primeiras avaliações pagas.</p>
+    <p>Confirma seus dados para desbloquear seu plano <b>agora, na próxima tela</b> — o WhatsApp fica guardado para te enviarmos os próximos passos.</p>
     <div class="field" id="fName"><label>Seu primeiro nome</label><input id="iName" type="text" placeholder="Ex.: Maria" autocomplete="given-name"><span class="err">Digite seu nome</span></div>
     <div class="field" id="fWpp"><label>Seu WhatsApp (com DDD)</label><input id="iWpp" type="tel" inputmode="numeric" placeholder="(31) 99999-9999" autocomplete="tel"><span class="err">Digite um WhatsApp válido</span></div>
     <button class="btn pulse" id="send">Liberar meu plano &rarr;</button>
@@ -806,11 +804,7 @@ function renderResult(){
         <li><span class="mi">${ckGreen}</span><span><b>No seu ritmo:</b> celular ou computador, no horário que você escolher.</span></li>
         <li><span class="mi">${ckGreen}</span><span><b>Sem exigências:</b> sem experiência, sem inglês, sem faculdade, sem aparecer, sem vender.</span></li>
       </ul>
-    </div>
-
-    <div class="why">
-      <p>A explosão da IA está criando essa demanda <b>agora</b>. Quanto antes você entra, menos concorrência encontra.<br>Seu plano fica reservado por:</p>
-      <div class="timer" id="timer">15:00</div>
+      <div class="tcard" style="margin-top:14px"><img src="${IMG.comoFunciona}" alt="Como funciona o método na prática" loading="lazy" width="880" height="1022" decoding="async"><div class="q"><b>Como funciona na prática</b> — do cadastro à primeira avaliação paga.</div></div>
     </div>
 
     <div class="sect">
@@ -822,10 +816,22 @@ function renderResult(){
       </div>
     </div>
 
+    <div class="testis">
+      <h3 style="font-family:Sora;font-weight:700;font-size:19px;margin-bottom:14px">Veja quem já está recebendo</h3>
+      <div class="tcard"><img src="${IMG.ueliton}" alt="Depoimento de Uéliton Alves — mais de 700 dólares na Outlier" loading="lazy" width="639" height="402" decoding="async"><div class="q"><b>Uéliton Alves</b> — aluno do AvaliaDólar Express.</div></div>
+      <div class="tcard"><img src="${IMG.pedro}" alt="Depoimento de Pedro Ramos" loading="lazy" width="880" height="1031" decoding="async"><div class="q"><b>Pedro Ramos</b> — aluno do AvaliaDólar Express.</div></div>
+    </div>
+
+    <div class="why">
+      <p>A explosão da IA está criando essa demanda <b>agora</b>. Quanto antes você entra, menos concorrência encontra.<br>Seu plano fica reservado por:</p>
+      <div class="timer" id="timer">15:00</div>
+    </div>
+
     <div class="offer" id="offerBox">
       <div class="offer-top">
         <span class="price-old">R$197</span><span class="price-off">80% OFF</span>
         <div class="price-new">R$ 37,90</div>
+        <div style="font-size:13px;color:var(--ink-soft);margin-top:2px">pagamento único — dá <b>R$1,26 por dia</b> no primeiro mês</div>
         <span class="pix-badge">${ckGreen} Pix aprovado na hora · acesso imediato</span>
       </div>
       <div class="offer-body">
@@ -841,23 +847,17 @@ function renderResult(){
           <li>🎁 Planilha de controle de ganhos</li>
           <li>🎁 Comunidade + atualizações de novas plataformas</li>
         </ul>
-        <img src="${IMG.bonus1}" alt="Bônus 1 — AvaliaDólar Express" loading="lazy">
-        <img src="${IMG.bonus2}" alt="Bônus 2 — AvaliaDólar Express" loading="lazy">
-        <img src="${IMG.bonus3}" alt="Bônus 3 — AvaliaDólar Express" loading="lazy">
+        <img src="${IMG.entregaveis}" alt="Tudo que você vai receber hoje no AvaliaDólar Express" loading="lazy" width="880" height="1156" decoding="async">
+        <img src="${IMG.beneficios}" alt="Benefícios: ganhar em dólar, dominar seu tempo, renda extra real, trabalho 100% online" loading="lazy" width="880" height="1320" decoding="async">
+        <img src="${IMG.preco}" alt="Valor total R$197 por apenas R$37,90 com todos os bônus" loading="lazy" width="880" height="1309" decoding="async">
         <div class="guarantee">
           <span style="font-size:22px">🛡️</span>
           <div><b>Garantia de 30 dias, sem perguntas.</b><span>Não gostou ou não teve resultado? Devolvemos 100% do valor. O risco é todo nosso.</span></div>
         </div>
         <button class="btn pulse buyBtn">Quero começar a avaliar IA hoje &rarr;</button>
+        <p style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:10px">${ckGreen} +9.300 alunos &middot; Garantia de 30 dias &middot; Pix na hora</p>
+        <img src="${IMG.selos}" alt="Compra segura, satisfação garantida, privacidade protegida" loading="lazy" style="margin-top:8px;border:none;border-radius:0" width="880" height="98" decoding="async">
       </div>
-    </div>
-
-    <div class="testis">
-      <h3 style="font-family:Sora;font-weight:700;font-size:19px;margin-bottom:14px">Veja quem já está recebendo</h3>
-      <div class="tcard"><img src="${IMG.proof}" alt="Comprovação de ganhos" loading="lazy"><div class="q"><b>Comprovação real</b> — pagamentos recebidos avaliando conteúdos online.</div></div>
-      <div class="tcard"><img src="${IMG.testUeliton}" alt="Depoimento de Uéliton Alves" loading="lazy"><div class="q"><b>Uéliton Alves</b> — aluno do AvaliaDólar Express.</div></div>
-      <div class="tcard"><img src="${IMG.testPedro}" alt="Depoimento de Pedro Ramos" loading="lazy"><div class="q"><b>Pedro Ramos</b> — aluno do AvaliaDólar Express.</div></div>
-      <div class="tcard"><img src="${IMG.testPedro2}" alt="Pedro Ramos" loading="lazy"><div class="q"><b>Resultado verificado</b> — comunidade AvaliaDólar.</div></div>
     </div>
 
     <div class="final-cta">
