@@ -650,8 +650,8 @@ function renderTestimonial(){
       <img src="${IMG.jonata}" alt="Depoimento de Jonata Bessa" loading="eager" width="880" height="461" decoding="async">
       <div class="testi-cap">${ckGreen} Jonata Bessa — aluno do AvaliaDólar Express</div>
     </div>
+    <button class="btn pulse" id="cont" style="margin-top:16px">Continuar &rarr;</button>
     <div class="spacer"></div>
-    <button class="btn" id="cont">Continuar &rarr;</button>
   </div>`;
   document.getElementById('cont').onclick = next;
 }
@@ -833,7 +833,7 @@ function renderResult(){
       <div class="offer-top">
         <span class="price-old">R$197</span><span class="price-off">80% OFF</span>
         <div class="price-new">R$ 37,90</div>
-        <div style="font-size:13px;color:var(--ink-soft);margin-top:2px;line-height:1.5">pagamento único, <b>sem mensalidade</b> — sai por <b>R$1,26 por dia</b>, e só durante o primeiro mês:<br>depois disso o acesso continua seu <b style="color:var(--emerald-deep)">sem pagar mais nada</b></div>
+        <div style="font-size:14px;color:var(--ink-soft);margin-top:4px;line-height:1.55;text-wrap:balance;max-width:300px;margin-left:auto;margin-right:auto">pagamento único, <b>sem mensalidade</b> — <b>R$1,26 por dia</b> só no 1º mês; depois o acesso é seu <b style="color:var(--emerald-deep)">sem pagar mais nada</b></div>
         <span class="pix-badge">${ckGreen} Pix aprovado na hora · acesso imediato</span>
       </div>
       <div class="offer-body">
@@ -863,7 +863,6 @@ function renderResult(){
     </div>
 
     <div class="final-cta">
-      <button class="btn pulse buyBtn">Quero começar a avaliar IA hoje &rarr;</button>
       <p class="urg">Esta condição de R$37,90 sai do ar quando seu tempo acabar.</p>
     </div>
 
