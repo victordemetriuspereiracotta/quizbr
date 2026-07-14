@@ -324,7 +324,7 @@ const CONFIG = {
   checkoutUrl:    "https://checkout4.xgrow.com/pt/62c4ee26-e498-4259-b746-5965851a8947/OTYxMjc=",   // checkout principal (R$37,90)
   downsellUrl:    "https://checkout4.xgrow.com/pt/62c4ee26-e498-4259-b746-5965851a8947/MTA1MjAx",   // checkout da versão Lite (R$19,90) — modal de saída ativo
   whatsappKeyword: "QUERO MEU PLANO",               // palavra-chave que dispara o flow no ManyChat (mensagem pré-preenchida do wa.me)
-  webhookUrl:     "",                               // webhook p/ armazenar leads (ManyChat / Apps Script / Make). Vazio = leads só no checkout
+  webhookUrl:     "https://script.google.com/macros/s/AKfycbyAuRx5PbioMT6_UfELdTlxQbNj_skVUmSszHbWLfEzG-mJz8phncqOGUn9HpiaS9RA/exec",   // planilha de leads (Apps Script) — dispara só no evento 'lead'                               // webhook p/ armazenar leads (ManyChat / Apps Script / Make). Vazio = leads só no checkout
   checkoutParamName:  "fn",
   checkoutParamEmail: "em",
   checkoutParamPhone: "ph"
@@ -439,10 +439,10 @@ function sendEvent(ev, extra){
   extra = extra || {};
   // Google Analytics 4 (sem nome/whatsapp/email)
   try{ if(typeof gtag==='function'){ gtag('event', ev, Object.assign(gaSafeParams(), extra)); } }catch(e){}
-  // Webhook opcional (dados completos, se você configurar CONFIG.webhookUrl)
-  if(CONFIG.webhookUrl){
+  // Webhook — envia o lead pra planilha (só no evento 'lead', pra não encher de linhas)
+  if(CONFIG.webhookUrl && ev==='lead'){
     try{
-      fetch(CONFIG.webhookUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      fetch(CONFIG.webhookUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
         body:JSON.stringify({event:ev, ts:new Date().toISOString(), page:location.href, ...answers, ...extra})});
     }catch(e){}
   }
