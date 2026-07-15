@@ -118,6 +118,7 @@
   @media (prefers-reduced-motion:reduce){.btn.pulse{animation:none}}
   .btn.ghost{background:none;color:var(--ink-soft);box-shadow:none;font-weight:600;font-size:14.5px;padding:10px;}
   .btn.ghost:hover{background:var(--mint);}
+  .btn.is-loading{opacity:.72;pointer-events:none;}
   .spacer{flex:1;}
 
   /* ---------- COVER ---------- */
@@ -327,10 +328,11 @@ const CONFIG = {
   checkoutUrl:    "https://checkout4.xgrow.com/pt/62c4ee26-e498-4259-b746-5965851a8947/OTYxMjc=",   // checkout principal (R$37,90)
   downsellUrl:    "https://checkout4.xgrow.com/pt/62c4ee26-e498-4259-b746-5965851a8947/MTA1MjAx",   // checkout da versão Lite (R$19,90) — modal de saída ativo
   whatsappKeyword: "QUERO MEU PLANO",               // palavra-chave que dispara o flow no ManyChat (mensagem pré-preenchida do wa.me)
-  webhookUrl:     "https://script.google.com/macros/s/AKfycbyAuRx5PbioMT6_UfELdTlxQbNj_skVUmSszHbWLfEzG-mJz8phncqOGUn9HpiaS9RA/exec",   // planilha de leads (Apps Script) — dispara só no evento 'lead'                               // webhook p/ armazenar leads (ManyChat / Apps Script / Make). Vazio = leads só no checkout
+  webhookUrl:     "https://script.google.com/macros/s/AKfycbyAuRx5PbioMT6_UfELdTlxQbNj_skVUmSszHbWLfEzG-mJz8phncqOGUn9HpiaS9RA/exec",   // planilha de leads (Apps Script) — dispara só no evento 'lead'
   checkoutParamName:  "fn",
   checkoutParamEmail: "em",
-  checkoutParamPhone: "ph"
+  checkoutParamPhone: "ph",
+  navEventTimeout: 900     // ms máximos que a navegação espera pelo GA4 antes de ir embora assim mesmo
 };
 /* ============================================================ */
 
@@ -437,10 +439,44 @@ function gaSafeParams(){
   ['q1','q2','q3','q4','q5','q6','q7','futurepace'].forEach(k=>{ if(answers[k]) p[k]=answers[k]; });
   return p;
 }
-function sendEvent(ev, extra){
+
+/*
+  sendEvent(ev, extra, done)
+
+  IMPORTANTE — o terceiro parâmetro `done`:
+  gtag('event') só empilha o evento no dataLayer. O disparo real (sendBeacon)
+  acontece num task posterior. Se a página navegar no mesmo tick
+  (window.location.href = ...), o evento morre antes de sair — era exatamente
+  isso que zerava checkout_click, downsell_click e whatsapp_optin no GA4.
+
+  Quando `done` é passado, usamos event_callback: o GA4 confirma o envio e só
+  então navegamos. O setTimeout é o cinto de segurança — se o GA4 estiver lento,
+  bloqueado por adblock ou fora do ar, o usuário navega mesmo assim em
+  CONFIG.navEventTimeout ms. O usuário NUNCA fica preso.
+*/
+function sendEvent(ev, extra, done){
   extra = extra || {};
-  // Google Analytics 4 (sem nome/whatsapp/email)
-  try{ if(typeof gtag==='function'){ gtag('event', ev, Object.assign(gaSafeParams(), extra)); } }catch(e){}
+
+  let finished = false;
+  const finish = () => { if(finished) return; finished = true; if(typeof done === 'function') done(); };
+
+  const params = Object.assign(gaSafeParams(), extra);
+  if(typeof done === 'function'){
+    params.transport_type  = 'beacon';
+    params.event_callback  = finish;
+    params.event_timeout   = CONFIG.navEventTimeout;
+  }
+
+  let queued = false;
+  try{
+    if(typeof gtag === 'function'){ gtag('event', ev, params); queued = true; }
+  }catch(e){}
+
+  if(typeof done === 'function'){
+    if(!queued) finish();                                  // gtag ausente/bloqueado: navega já
+    else setTimeout(finish, CONFIG.navEventTimeout);       // rede lenta: navega assim mesmo
+  }
+
   // Webhook — envia o lead pra planilha (só no evento 'lead', pra não encher de linhas)
   if(CONFIG.webhookUrl && ev==='lead'){
     try{
@@ -448,6 +484,12 @@ function sendEvent(ev, extra){
         body:JSON.stringify({event:ev, ts:new Date().toISOString(), page:location.href, ...answers, ...extra})});
     }catch(e){}
   }
+}
+
+/* Navega para `url` só depois que o GA4 confirmar o evento (ou estourar o timeout) */
+function sendEventThenGo(ev, url, btn){
+  if(btn){ btn.classList.add('is-loading'); }
+  sendEvent(ev, null, () => { window.location.href = url; });
 }
 
 /* ---------------- RENDER CORE ---------------- */
@@ -878,9 +920,16 @@ function renderResult(){
   sendEvent('result_view');
 }
 
-function goCheckout(){
-  sendEvent('checkout_click');
-  window.location.href=buildCheckoutUrl(CONFIG.checkoutUrl);
+/*
+  CORRIGIDO: antes era
+    sendEvent('checkout_click');
+    window.location.href = buildCheckoutUrl(CONFIG.checkoutUrl);
+  A navegação matava o evento antes dele sair. Agora navegamos no callback do GA4.
+*/
+function goCheckout(e){
+  if(e && e.preventDefault) e.preventDefault();
+  const btn = (e && e.currentTarget) ? e.currentTarget : null;
+  sendEventThenGo('checkout_click', buildCheckoutUrl(CONFIG.checkoutUrl), btn);
 }
 
 function animateProjection(){
@@ -946,6 +995,7 @@ function setupSticky(){
 }
 
 /* ---------------- EXIT INTENT / DOWNSELL ---------------- */
+let exitWired = false;
 function maybeExit(){
   if(!CONFIG.downsellUrl) return;
   if(sessionStorage.getItem(LS_EXIT)) return;
@@ -956,6 +1006,17 @@ function maybeExit(){
 function setupExitIntent(nome){
   if(!CONFIG.downsellUrl) return;
   document.getElementById('mTitle').textContent = `${nome}, antes de sair…`;
+
+  document.getElementById('mDown').onclick=(e)=>{
+    sendEventThenGo('downsell_click', buildCheckoutUrl(CONFIG.downsellUrl), e && e.currentTarget);
+  };
+  document.getElementById('mWpp').onclick=(e)=>{
+    sendEventThenGo('whatsapp_optin', buildWhatsappUrl(), e && e.currentTarget);
+  };
+
+  if(exitWired) return;   // evita empilhar listeners se renderResult rodar de novo
+  exitWired = true;
+
   // Desktop: mouse saindo pelo topo
   document.addEventListener('mouseout',e=>{
     if(!e.relatedTarget && e.clientY<=0) maybeExit();
@@ -967,14 +1028,6 @@ function setupExitIntent(nome){
       if(FLOW[idx]==="result" && !sessionStorage.getItem(LS_EXIT)){ maybeExit(); history.pushState({q:1},""); }
     });
   }catch(e){}
-  document.getElementById('mDown').onclick=()=>{
-    sendEvent('downsell_click');
-    window.location.href=buildCheckoutUrl(CONFIG.downsellUrl);
-  };
-  document.getElementById('mWpp').onclick=()=>{
-    sendEvent('whatsapp_optin');
-    window.location.href=buildWhatsappUrl();
-  };
 }
 
 /* ---------------- WHATSAPP OPT-IN (wa.me + palavra-chave) ---------------- */
