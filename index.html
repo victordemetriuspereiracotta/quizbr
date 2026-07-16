@@ -400,7 +400,7 @@ const QUESTIONS = {
       {v:"ate1000",l:"Até R$1.000",s:"uma folga no fim do mês"},
       {v:"1000-2500",l:"R$1.000 a R$2.500",s:"pagar minhas contas com tranquilidade"},
       {v:"2500-5000",l:"R$2.500 a R$5.000",s:"mudar de vida de verdade"},
-      {v:"5000+",l:"Mais de R$5.000",s:"liberdade financeira total"}
+      {v:"5000+",l:"Mais de R$5.000",s:"viver disso"}
     ]},
   q2:{proof:"Mais de 9.300 brasileiros já começaram avaliando IA pelo celular.",
     title:"E hoje, como está a sua situação financeira?",
@@ -410,13 +410,13 @@ const QUESTIONS = {
       {v:"confortavel",l:"Estou confortável, mas quero mais liberdade"},
       {v:"boa",l:"Tenho boa renda, quero diversificar"}
     ]},
-  q3:{warn:"O tempo que você passa no celular pode estar virando dinheiro pra outra pessoa.",
+  q3:{warn:"Você já passa horas vendo vídeos no feed — de graça.",
     title:"Quantas horas por dia você passa no celular?",
     opts:[
       {v:"-1",l:"Menos de 1 hora"},{v:"1-2",l:"1 a 2 horas"},
       {v:"2-4",l:"2 a 4 horas"},{v:"+4",l:"Mais de 4 horas"}
     ]},
-  q4:{eyebrow:"Quase lá",sub:"Cada hora ali é uma hora que empresas de IA pagam para alguém avaliar conteúdo. Por que não você?",
+  q4:{eyebrow:"Quase lá",sub:"Esses vídeos que você vê rolando o feed? Muitos são anúncios feitos por IA. Tem gente assistindo os mesmos vídeos — só que <b>recebendo em dólar</b> pra dizer se estão bons.",
     title:"Quanto desse tempo você toparia usar para receber em dólar?",
     opts:[
       {v:"30min",l:"Até 30 minutos por dia"},{v:"1h",l:"1 hora por dia"},
@@ -444,14 +444,14 @@ const QUESTIONS = {
     ]}
 };
 
-/* Fluxo V4: 2 interstitials de "análise parcial" (efeito de investimento) */
-const FLOW = ["cover","q1","q2","inter1","q3","q4","inter2","q5","testimonial","q6","q7","futurepace","processing","capture","result"];
-const QUIZ_STEPS = ["q1","q2","inter1","q3","q4","inter2","q5","testimonial","q6","q7","futurepace"];
+/* Fluxo V5: a capa É a pergunta 1 (cold open — primeira tela já é interativa) */
+const FLOW = ["cover","q2","inter1","q3","q4","inter2","q5","testimonial","q6","q7","futurepace","processing","capture","result"];
+const QUIZ_STEPS = ["q2","inter1","q3","q4","inter2","q5","testimonial","q6","q7","futurepace"];
 let answers = {};
 let idx = 0;
 
 /* ---------------- PERSISTÊNCIA / UTM ---------------- */
-const LS_STATE="ad_v4_state", LS_DEADLINE="ad_v4_deadline", LS_EXIT="ad_v4_exit";
+const LS_STATE="ad_v5_state", LS_DEADLINE="ad_v4_deadline", LS_EXIT="ad_v4_exit";
 function saveState(){ try{localStorage.setItem(LS_STATE,JSON.stringify({idx,answers,ts:Date.now()}));}catch(e){} }
 function loadState(){
   try{
@@ -545,7 +545,7 @@ function setProgress(id){
   const hidebar = ["cover","processing","capture","result"].includes(id);
   topbar.classList.toggle('show', !hidebar);
   if(i>=0){ const p = Math.round(((i+1)/QUIZ_STEPS.length)*100); bar.style.width=p+'%'; pct.textContent=p+'%'; }
-  document.getElementById('backBtn').style.visibility = QUIZ_STEPS.includes(id) && id!=="q1" ? "visible":"hidden";
+  document.getElementById('backBtn').style.visibility = QUIZ_STEPS.includes(id) && id!=="q2" ? "visible":"hidden";
 }
 
 function render(){
@@ -567,105 +567,47 @@ function render(){
 function next(){ idx=Math.min(idx+1,FLOW.length-1); render(); }
 function goBack(){ if(idx>0){ idx--; if(FLOW[idx].startsWith("inter")) idx--; render(); } }
 
-/* ---------------- COVER ---------------- */
+/* ---------------- COVER = PERGUNTA 1 (cold open) ---------------- */
 function renderCover(){
+  const opts = QUESTIONS.q1.opts.map(o=>`
+    <button class="opt" data-v="${o.v}">
+      <span class="dot">${ck}</span>
+      <span class="txt"><span class="lbl">${o.l}</span>${o.s?`<span class="sub">${o.s}</span>`:''}</span>
+    </button>`).join('');
   screen.innerHTML = `
-  <div class="step cover">
-    <div class="hero-img">
-      <svg viewBox="0 0 720 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Avalie anúncios criados por IA e receba em dólar">
-        <defs>
-          <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#0C8552"/><stop offset=".6" stop-color="#075638"/><stop offset="1" stop-color="#053D28"/>
-          </linearGradient>
-          <linearGradient id="phoneGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#10311F"/><stop offset="1" stop-color="#071A10"/>
-          </linearGradient>
-          <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#F2B705"/>
-          </linearGradient>
-          <radialGradient id="glow" cx=".5" cy=".42" r=".62">
-            <stop offset="0" stop-color="#18B26F" stop-opacity=".55"/><stop offset="1" stop-color="#18B26F" stop-opacity="0"/>
-          </radialGradient>
-          <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#021510" flood-opacity=".45"/>
-          </filter>
-        </defs>
-        <rect width="720" height="470" fill="url(#bgGrad)"/>
-        <rect width="720" height="470" fill="url(#glow)"/>
-        <g stroke="#ffffff" stroke-opacity=".06"><line x1="0" y1="118" x2="720" y2="118"/><line x1="0" y1="236" x2="720" y2="236"/><line x1="0" y1="354" x2="720" y2="354"/><line x1="120" y1="0" x2="120" y2="470"/><line x1="360" y1="0" x2="360" y2="470"/><line x1="600" y1="0" x2="600" y2="470"/></g>
-        <text x="360" y="64" text-anchor="middle" font-family="Sora,Arial,sans-serif" font-weight="800" font-size="44" fill="#FFFFFF" letter-spacing=".5">AVALIE ANÚNCIOS DE <tspan fill="url(#goldGrad)">IA</tspan></text>
-        <text x="360" y="112" text-anchor="middle" font-family="Sora,Arial,sans-serif" font-weight="800" font-size="44" fill="url(#goldGrad)" letter-spacing=".5">RECEBA EM DÓLAR</text>
-        <text x="360" y="143" text-anchor="middle" font-family="Plus Jakarta Sans,Arial,sans-serif" font-weight="600" font-size="17" fill="#BFE9D2">direto do seu celular · sem experiência · sem inglês</text>
-        <g filter="url(#soft)">
-          <rect x="252" y="162" width="216" height="278" rx="30" fill="url(#phoneGrad)"/>
-          <rect x="262" y="172" width="196" height="258" rx="22" fill="#FFFFFF"/>
-          <rect x="330" y="182" width="60" height="9" rx="4.5" fill="#0B2417"/>
-        </g>
-        <g font-family="Plus Jakarta Sans,Arial,sans-serif">
-          <rect x="276" y="200" width="64" height="22" rx="11" fill="#E6F4EC"/>
-          <text x="308" y="215" text-anchor="middle" font-family="Sora,Arial,sans-serif" font-weight="800" font-size="12" fill="#0B7A4B">✦ IA</text>
-          <text x="444" y="215" text-anchor="end" font-weight="600" font-size="11" fill="#8AA295">anúncio #347</text>
-          <rect x="276" y="230" width="168" height="88" rx="12" fill="#F4FAF6" stroke="#DCE7E0"/>
-          <rect x="288" y="242" width="64" height="44" rx="8" fill="#0B7A4B"/>
-          <path d="M304 254 L321 264 L304 274 Z" fill="#FFFFFF"/>
-          <rect x="362" y="244" width="68" height="8" rx="4" fill="#102219"/>
-          <rect x="362" y="258" width="50" height="7" rx="3.5" fill="#9DB3A7"/>
-          <rect x="362" y="271" width="58" height="7" rx="3.5" fill="#9DB3A7"/>
-          <rect x="288" y="296" width="92" height="7" rx="3.5" fill="#C9DCD1"/>
-          <g transform="translate(284 330)" fill="url(#goldGrad)">
-            <path d="M14 0l4.3 8.8 9.7 1.4-7 6.8 1.6 9.6L14 22l-8.6 4.6L7 17 0 10.2l9.7-1.4z" transform="translate(0 0) scale(.92)"/>
-            <path d="M14 0l4.3 8.8 9.7 1.4-7 6.8 1.6 9.6L14 22l-8.6 4.6L7 17 0 10.2l9.7-1.4z" transform="translate(30 0) scale(.92)"/>
-            <path d="M14 0l4.3 8.8 9.7 1.4-7 6.8 1.6 9.6L14 22l-8.6 4.6L7 17 0 10.2l9.7-1.4z" transform="translate(60 0) scale(.92)"/>
-            <path d="M14 0l4.3 8.8 9.7 1.4-7 6.8 1.6 9.6L14 22l-8.6 4.6L7 17 0 10.2l9.7-1.4z" transform="translate(90 0) scale(.92)"/>
-            <path d="M14 0l4.3 8.8 9.7 1.4-7 6.8 1.6 9.6L14 22l-8.6 4.6L7 17 0 10.2l9.7-1.4z" transform="translate(120 0) scale(.92)"/>
-          </g>
-          <rect x="276" y="370" width="168" height="42" rx="21" fill="#0A8A4F"/>
-          <text x="360" y="397" text-anchor="middle" font-family="Sora,Arial,sans-serif" font-weight="800" font-size="17" fill="#FFFFFF">AVALIAR ✓</text>
-        </g>
-        <g transform="rotate(-12 150 330)" filter="url(#soft)">
-          <rect x="78" y="292" width="150" height="74" rx="10" fill="#2FA468"/>
-          <rect x="86" y="300" width="134" height="58" rx="7" fill="none" stroke="#CFF3DE" stroke-width="2" stroke-dasharray="5 4"/>
-          <circle cx="153" cy="329" r="21" fill="#CFF3DE"/>
-          <text x="153" y="338" text-anchor="middle" font-family="Sora,Arial,sans-serif" font-weight="800" font-size="24" fill="#0B7A4B">$</text>
-        </g>
-        <g transform="rotate(-12 150 330)">
-          <rect x="70" y="282" width="150" height="74" rx="10" fill="#37B173"/>
-          <rect x="78" y="290" width="134" height="58" rx="7" fill="none" stroke="#E2FBEC" stroke-width="2" stroke-dasharray="5 4"/>
-          <circle cx="145" cy="319" r="21" fill="#E2FBEC"/>
-          <text x="145" y="328" text-anchor="middle" font-family="Sora,Arial,sans-serif" font-weight="800" font-size="24" fill="#0B7A4B">$</text>
-        </g>
-        <g filter="url(#soft)">
-          <circle cx="560" cy="318" r="46" fill="url(#goldGrad)"/>
-          <circle cx="560" cy="318" r="46" fill="none" stroke="#C98A12" stroke-width="3"/>
-          <circle cx="560" cy="318" r="35" fill="none" stroke="#C98A12" stroke-width="1.6" stroke-dasharray="4 4"/>
-          <text x="560" y="334" text-anchor="middle" font-family="Sora,Arial,sans-serif" font-weight="800" font-size="42" fill="#7A5410">$</text>
-        </g>
-        <g>
-          <circle cx="611" cy="386" r="26" fill="url(#goldGrad)"/>
-          <circle cx="611" cy="386" r="26" fill="none" stroke="#C98A12" stroke-width="2.4"/>
-          <text x="611" y="395" text-anchor="middle" font-family="Sora,Arial,sans-serif" font-weight="800" font-size="24" fill="#7A5410">$</text>
-        </g>
-        <g fill="#9FE7C4"><path d="M96 168l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/><path d="M636 150l3 8 8 3-8 3-3 8-3-8-8-3 8-3z"/><path d="M508 206l2.5 6.5 6.5 2.5-6.5 2.5-2.5 6.5-2.5-6.5-6.5-2.5 6.5-2.5z"/></g>
-      </svg>
-    </div>
-    <div class="cover-body">
-      <div class="pay-pill">
-        <span class="pp-ico">$</span>
-        <div style="text-align:left"><small>Pagamento recebido</small><b>+ US$ 247,00</b></div>
+  <div class="step cover" style="padding:16px 20px 24px">
+    <h1 style="font-size:25px;text-align:center;line-height:1.24">Empresas de IA <span class="hl">pagam em dólar</span> pra você dizer se um anúncio tá bom ou ruim.</h1>
+    <div style="width:min(330px,100%);margin:12px auto 2px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;position:relative;z-index:2">
+      <div style="display:flex;align-items:center;gap:12px;padding:9px 14px">
+        <span style="flex:0 0 auto;width:36px;height:36px;border-radius:10px;background:var(--emerald);display:grid;place-items:center">
+          <svg width="13" height="15" viewBox="0 0 14 16"><path d="M1 1 L13 8 L1 15 Z" fill="#fff"/></svg>
+        </span>
+        <div style="flex:1;text-align:left">
+          <small style="display:block;font-size:10.5px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em">347 avaliações enviadas</small>
+          <svg width="92" height="16" viewBox="0 0 92 16" style="margin-top:2px"><g fill="#F2B705"><path d="M8 0l2.4 5 5.6.8-4 4 1 5.6L8 12.7 3 15.4l1-5.6-4-4L5.6 5z"/><path d="M8 0l2.4 5 5.6.8-4 4 1 5.6L8 12.7 3 15.4l1-5.6-4-4L5.6 5z" transform="translate(19 0)"/><path d="M8 0l2.4 5 5.6.8-4 4 1 5.6L8 12.7 3 15.4l1-5.6-4-4L5.6 5z" transform="translate(38 0)"/><path d="M8 0l2.4 5 5.6.8-4 4 1 5.6L8 12.7 3 15.4l1-5.6-4-4L5.6 5z" transform="translate(57 0)"/><path d="M8 0l2.4 5 5.6.8-4 4 1 5.6L8 12.7 3 15.4l1-5.6-4-4L5.6 5z" transform="translate(76 0)"/></g></svg>
+        </div>
+      </div>
+      <div style="height:1px;background:var(--line)"></div>
+      <div style="display:flex;align-items:center;gap:12px;padding:9px 14px">
+        <span class="pp-ico" style="width:36px;height:36px">$</span>
+        <div style="flex:1;text-align:left"><small style="display:block;font-size:10.5px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Pagamento recebido</small><b style="font-family:'Sora',sans-serif;font-weight:800;font-size:19px;color:var(--emerald-deep);line-height:1.1">+ US$ 283,45</b></div>
         <span class="pp-check">${ckGreen}</span>
       </div>
-      <h1>Descubra em 90 segundos quanto você pode receber <span class="hl">em dólar avaliando IA</span></h1>
-      <p>Empresas de inteligência artificial pagam pessoas comuns para avaliar respostas e anúncios gerados por IA. Responda 7 perguntas rápidas e veja sua projeção personalizada.</p>
-      <div class="badges">
-        <span class="badge">${ckGreen} +9.300 pessoas</span>
-        <span class="badge">${ckGreen} 100% gratuito</span>
-        <span class="badge">${ckGreen} leva 2 minutos</span>
-      </div>
-      <button class="btn pulse" id="start">Fazer meu teste gratuito &rarr;</button>
-      <p class="cover-foot">Pagamentos em dólar convertidos via PayPal</p>
     </div>
+    <p style="font-size:18px;margin:13px 0 2px;text-align:center;color:var(--ink);font-weight:700;font-family:'Sora',sans-serif">Quanto você quer receber por mês?</p>
+    <div class="options">${opts}</div>
+    <p style="text-align:center;font-size:13px;color:var(--ink-soft);margin-top:10px;line-height:1.55">${ckGreen} Descubra grátis em 90 segundos<br><b>+9.300 já descobriram o delas</b></p>
+    <p class="cover-foot" style="text-align:center">Sem experiência · Sem inglês · Pagamento via PayPal</p>
   </div>`;
-  document.getElementById('start').onclick = ()=>{ sendEvent('quiz_start'); next(); };
+  screen.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(screen.querySelector('.opt.selected')) return;
+    b.classList.add('selected');
+    answers.q1=b.dataset.v;
+    saveState();
+    sendEvent('quiz_start');
+    sendEvent('quiz_answer', {step:'q1', choice:b.dataset.v});
+    setTimeout(next,340);
+  });
 }
 
 /* ---------------- QUESTION ---------------- */
@@ -786,11 +728,11 @@ function renderCapture(){
   screen.innerHTML = `
   <div class="step cap">
     <div class="seal">${ckGreen.replace('width="13" height="13"','width="26" height="26"')}</div>
-    <h2>Seu Plano AvaliaDólar está pronto</h2>
-    <p>Confirma seus dados para desbloquear seu plano <b>agora, na próxima tela</b> — o WhatsApp fica guardado para te enviarmos os próximos passos.</p>
+    <h2>Sua análise terminou — e o resultado é bom</h2>
+    <p>Confirma seus dados para ver <b>sua projeção personalizada</b> na próxima tela — o WhatsApp fica guardado para os próximos passos.</p>
     <div class="field" id="fName"><label>Seu primeiro nome</label><input id="iName" type="text" placeholder="Ex.: Maria" autocomplete="given-name"><span class="err">Digite seu nome</span></div>
     <div class="field" id="fWpp"><label>Seu WhatsApp (com DDD)</label><input id="iWpp" type="tel" inputmode="numeric" placeholder="(31) 99999-9999" autocomplete="tel"><span class="err">Digite um WhatsApp válido</span></div>
-    <button class="btn pulse" id="send">Liberar meu plano &rarr;</button>
+    <button class="btn pulse" id="send">Ver minha projeção &rarr;</button>
     <p class="cap-foot">${ckGreen} Sem spam. Só o seu plano e os próximos passos.</p>
   </div>`;
   const iWpp=document.getElementById('iWpp');
@@ -831,21 +773,14 @@ function renderResult(){
   const tempo = TEMPO_LBL[answers.q4] || "alguns minutos por dia";
   const tentou = answers.q5==="tentei";
   const hl = idxScenario(answers.q4);
-  const wOut = weeksOut(answers.q4);
-  const wLbl = wOut===1 ? "1 semana" : `${wOut} semanas`;
-  const objBlock = tentou ? `<div class="res-obj">Se você já tentou e não deu certo, o problema nunca foi você — foi a falta de um mecanismo validado. É exatamente isso que muda aqui.</div>`:'';
-
-  const scenRows = [
-    {ico:"🌱",b:"Começando (~30 min/dia)",s:"primeiras avaliações pagas em 7 a 15 dias"},
-    {ico:"⚡",b:"Constante (~1 h/dia)",s:"ritmo de renda extra recorrente em poucas semanas"},
-    {ico:"🚀",b:"Acelerado (2–3 h/dia)",s:"maior volume de avaliações = maior potencial"}
-  ].map((r,i)=>`<div class="row ${i===hl?'hl':''}"><span class="ico">${r.ico}</span><div><b>${r.b}</b><small>${r.s}</small></div></div>`).join('');
+  const dLbl = hl===0 ? "7 a 15 dias" : hl===1 ? "7 a 10 dias" : "esta semana";
+  const objBlock = tentou ? `<div class="res-obj">Você já tentou antes e não veio resultado? Não faltou esforço — faltou um mecanismo já validado por milhares de pessoas. É exatamente isso que você destrava hoje.</div>`:'';
 
   screen.innerHTML = `
   <div class="result">
     <div class="res-head">
-      <div class="tag">Seu plano personalizado</div>
-      <h2>${nome}, dedicando <b>${tempo}</b>, sua projeção aponta para a faixa de <b>${meta}</b> por mês em cerca de <b>${wLbl}</b>.</h2>
+      <div class="tag">Análise concluída · Perfil aprovado</div>
+      <h2>${nome}, seu perfil foi <b>aprovado</b>. Dedicando <b>${tempo}</b>, você entra na faixa de <b>${meta}</b> por mês — com as primeiras avaliações pagas em <b>${dLbl}</b>.</h2>
       ${objBlock}
     </div>
 
@@ -859,7 +794,7 @@ function renderResult(){
           <text x="30" y="164" text-anchor="end" font-family="Plus Jakarta Sans" font-size="10" fill="#8AA295">R$0</text>
           <text x="30" y="56" text-anchor="end" font-family="Plus Jakarta Sans" font-size="10" fill="#0B7A4B" font-weight="700">${metaShort}</text>
           <text x="44" y="177" font-family="Plus Jakarta Sans" font-size="10.5" fill="#8AA295">hoje</text>
-          <text x="298" y="177" text-anchor="end" font-family="Sora" font-weight="700" font-size="10.5" fill="#064E30">${wLbl}</text>
+          <text x="298" y="177" text-anchor="end" font-family="Sora" font-weight="700" font-size="10.5" fill="#064E30">${dLbl}</text>
           <path id="projArea" d="M40 156 C 110 150, 170 118, 230 78 S 288 54, 296 52 L 296 160 L 40 160 Z" fill="#0B7A4B" opacity="0" />
           <path id="projPath" d="M40 156 C 110 150, 170 118, 230 78 S 288 54, 296 52" fill="none" stroke="#0B7A4B" stroke-width="3.5" stroke-linecap="round"/>
           <circle id="projDot" cx="296" cy="52" r="6" fill="#0B7A4B" opacity="0"/>
@@ -870,13 +805,30 @@ function renderResult(){
           </g>
         </svg>
       </div>
-      <p class="proj-cap">Projeção no seu ritmo de <b>${tempo}</b>, seguindo o plano desde a primeira semana.</p>
+      <p class="proj-cap">Primeiras avaliações pagas em <b>${dLbl}</b> — crescendo até <b>${metaShort}/mês</b> no seu ritmo de ${tempo}.</p>
     </div>
 
     <div class="sect">
-      <h3>O que o seu ritmo pode gerar</h3>
-      <div class="scen">${scenRows}</div>
-      <p class="disc">*Resultados variam conforme dedicação, perfil e disponibilidade das plataformas. Não há garantia de ganho.</p>
+      <div class="offer" style="margin:14px 0 0">
+        <div class="offer-top">
+          <span class="price-old">R$197</span><span class="price-off">80% OFF SÓ HOJE</span>
+          <div class="price-new">R$ 37,90</div>
+          <span class="pix-badge">${ckGreen} Pix aprovado na hora · começa em 2 minutos</span>
+        </div>
+        <div class="offer-body" style="padding:14px 20px 18px">
+          <button class="btn pulse buyBtn">Destravar meu acesso agora &rarr;</button>
+          <p style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:9px">${ckGreen} Garantia incondicional de 30 dias — risco zero</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="testis" style="padding-top:22px">
+      <h3 style="font-family:Sora;font-weight:700;font-size:19px;margin-bottom:4px">Gente comum. Resultado real.</h3>
+      <p style="color:var(--ink-soft);font-size:14.5px;margin-bottom:14px">O mesmo método que você acabou de destravar:</p>
+      <div class="tcard"><img src="${IMG.pedro}" alt="Depoimento de Pedro Ramos" loading="lazy" width="880" height="1031" decoding="async"><div class="q"><b>Pedro Ramos</b> relata entre <b>R$8.000 e R$14.000 por mês</b> avaliando IA.</div></div>
+      <div class="tcard"><img src="${IMG.ueliton}" alt="Depoimento de Uéliton Alves" loading="lazy" width="639" height="402" decoding="async"><div class="q"><b>Uéliton Alves</b> — mais de <b>US$ 700</b> recebidos na Outlier.</div></div>
+      <div class="tcard"><img src="${IMG.jonata}" alt="Depoimento de Jonata Bessa" loading="lazy" width="880" height="461" decoding="async"><div class="q"><b>Jonata Bessa</b> — <b>US$ 500 em uma única semana</b>.</div></div>
+      <p style="font-size:14px;color:var(--ink);background:var(--gold-bg);border-radius:12px;padding:12px 14px;margin-top:4px"><b>As plataformas distribuem tarefas todos os dias.</b> Avaliação que outra pessoa pega, você não recebe. A fila anda — com ou sem você.</p>
     </div>
 
     <div class="sect">
@@ -901,23 +853,18 @@ function renderResult(){
       </div>
     </div>
 
-    <div class="testis">
-      <h3 style="font-family:Sora;font-weight:700;font-size:19px;margin-bottom:14px">Veja quem já está recebendo</h3>
-      <div class="tcard"><img src="${IMG.ueliton}" alt="Depoimento de Uéliton Alves — mais de 700 dólares na Outlier" loading="lazy" width="639" height="402" decoding="async"><div class="q"><b>Uéliton Alves</b> — aluno do AvaliaDólar Express.</div></div>
-      <div class="tcard"><img src="${IMG.pedro}" alt="Depoimento de Pedro Ramos" loading="lazy" width="880" height="1031" decoding="async"><div class="q"><b>Pedro Ramos</b> — aluno do AvaliaDólar Express.</div></div>
-    </div>
-
     <div class="why">
-      <p>A explosão da IA está criando essa demanda <b>agora</b>. Quanto antes você entra, menos concorrência encontra.<br>Seu plano fica reservado por:</p>
+      <p><b>${nome}</b>, a demanda por avaliadores explodiu <b>agora</b> — e quem entra primeiro pega as tarefas primeiro.<br>Seus <b>80% de desconto</b> estão reservados por:</p>
       <div class="timer" id="timer">15:00</div>
+      <p style="font-size:13px;margin-top:6px">Quando zerar, essa condição sai do ar.</p>
     </div>
 
     <div class="offer" id="offerBox">
       <div class="offer-top">
-        <span class="price-old">R$197</span><span class="price-off">80% OFF</span>
+        <span class="price-old">R$197</span><span class="price-off">80% OFF SÓ HOJE</span>
         <div class="price-new">R$ 37,90</div>
-        <div style="font-size:14px;color:var(--ink-soft);margin-top:4px;line-height:1.55;text-wrap:balance;max-width:300px;margin-left:auto;margin-right:auto">pagamento único, <b>sem mensalidade</b> — <b>R$1,26 por dia</b> só no 1º mês; depois o acesso é seu <b style="color:var(--emerald-deep)">sem pagar mais nada</b></div>
-        <span class="pix-badge">${ckGreen} Pix aprovado na hora · acesso imediato</span>
+        <div style="font-size:14px;color:var(--ink-soft);margin-top:4px;line-height:1.55;text-wrap:balance;max-width:300px;margin-left:auto;margin-right:auto"><b>Pagamento único.</b> Sem mensalidade, sem pegadinha — o acesso é seu <b style="color:var(--emerald-deep)">pra sempre</b></div>
+        <span class="pix-badge">${ckGreen} Pix aprovado na hora · começa em 2 minutos</span>
       </div>
       <div class="offer-body">
         <ul class="inc">
@@ -937,19 +884,19 @@ function renderResult(){
         <img src="${IMG.preco}" alt="Valor total R$197 por apenas R$37,90 com todos os bônus" loading="lazy" width="880" height="1309" decoding="async">
         <div class="guarantee">
           <span style="font-size:22px">🛡️</span>
-          <div><b>Garantia de 30 dias, sem perguntas.</b><span>Não gostou ou não teve resultado? Devolvemos 100% do valor. O risco é todo nosso.</span></div>
+          <div><b>Risco zero, de verdade: 30 dias de garantia.</b><span>Entra, testa tudo, faz suas primeiras avaliações. Se não fizer sentido pra você, um e-mail e 100% do dinheiro volta. Eu assumo o risco — você só tem a ganhar.</span></div>
         </div>
-        <button class="btn pulse buyBtn">Quero começar a avaliar IA hoje &rarr;</button>
+        <button class="btn pulse buyBtn">Quero minha primeira avaliação paga &rarr;</button>
         <p style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:10px">${ckGreen} +9.300 alunos &middot; Garantia de 30 dias &middot; Pix na hora</p>
         <img src="${IMG.selos}" alt="Compra segura, satisfação garantida, privacidade protegida" loading="lazy" style="margin-top:8px;border:none;border-radius:0" width="880" height="98" decoding="async">
       </div>
     </div>
 
     <div class="final-cta">
-      <p class="urg">Esta condição de R$37,90 sai do ar quando seu tempo acabar.</p>
+      <p class="urg">${nome}, decide com o timer rodando: R$37,90 agora — ou R$197 depois.</p>
     </div>
 
-    <p class="foot">© 2026 AvaliaDólar Express · Pagamento seguro · Resultados não garantidos e variam por pessoa.</p>
+    <p class="foot">© 2026 AvaliaDólar Express · Pagamento seguro · Garantia de 30 dias<br><span style="font-size:10px">Resultados variam conforme dedicação e disponibilidade das plataformas.</span></p>
   </div>`;
 
   document.querySelectorAll('.buyBtn').forEach(b=>b.onclick=goCheckout);
@@ -1023,16 +970,8 @@ function startTimer(){
 
 /* ---------------- STICKY CTA ---------------- */
 function setupSticky(){
-  const sc=document.getElementById('stickyCta');
-  const onScroll=()=>{
-    let passed=false;
-    const g=document.getElementById('gateComoFunciona');
-    if(g){ passed = g.getBoundingClientRect().bottom <= 0; }   // imagem "como funciona" já ficou pra trás
-    else { passed = window.scrollY>520; }                      // fallback de segurança
-    sc.classList.toggle('show', passed && FLOW[idx]==="result");
-  };
-  window.addEventListener('scroll',onScroll,{passive:true});
-  onScroll();
+  // CTA fixo aparece IMEDIATAMENTE na página de resultado — o preço nunca sai da tela
+  document.getElementById('stickyCta').classList.toggle('show', FLOW[idx]==="result");
 }
 
 /* ---------------- EXIT INTENT / DOWNSELL ---------------- */
