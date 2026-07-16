@@ -323,7 +323,12 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-NSSQ773B4N');
+  // ?debug_mode=1 na URL liga o DebugView do GA4. Sem o parâmetro, o objeto
+  // vai vazio e o tráfego normal segue limpo.
+  // ATENÇÃO: não trocar por {debug_mode:false} — o GA4 checa a PRESENÇA da
+  // chave, não o valor. Passar false ligaria o debug pra todo mundo.
+  gtag('config', 'G-NSSQ773B4N',
+    location.search.indexOf('debug_mode=1') > -1 ? {debug_mode: true} : {});
 </script>
 <!-- End Google Analytics 4 -->
 </head>
