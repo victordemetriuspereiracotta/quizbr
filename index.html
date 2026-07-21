@@ -37,13 +37,12 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Qual o seu potencial avaliando IA?">
 <meta name="twitter:description" content="7 perguntas · menos de 2 minutos · sua estimativa personalizada. Grátis.">
-<meta name="twitter:image" content="https://quizbr.pages.dev/img/og-v5.jpg">
 <meta name="theme-color" content="#0B7A4B">
 <!-- ============================================================ -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://checkout4.xgrow.com">
+<link rel="preconnect" href="https://pay.cakto.com.br">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet"></noscript>
 <style>
@@ -365,13 +364,13 @@
    ============================================================ */
 const CONFIG = {
   whatsappNumber: "5531999199269",                 // seu WhatsApp (só números, com 55 + DDD)
-  checkoutUrl:    "https://checkout4.xgrow.com/pt/62c4ee26-e498-4259-b746-5965851a8947/OTYxMjc=",   // checkout principal (R$37,90)
-  downsellUrl:    "https://checkout4.xgrow.com/pt/62c4ee26-e498-4259-b746-5965851a8947/MTA1MjAx",   // checkout da versão Lite (R$19,90) — modal de saída ativo
+  checkoutUrl:    "https://pay.cakto.com.br/nfcxe7q_993328",   // checkout principal Cakto (R$37,90)
+  downsellUrl:    "https://pay.cakto.com.br/yx7f5nn_993534",   // downsell Lite Cakto (R$19,90) — modal de saída ativo
   whatsappKeyword: "QUERO MEU PLANO",               // palavra-chave que dispara o flow no ManyChat (mensagem pré-preenchida do wa.me)
   webhookUrl:     "https://script.google.com/macros/s/AKfycbyAuRx5PbioMT6_UfELdTlxQbNj_skVUmSszHbWLfEzG-mJz8phncqOGUn9HpiaS9RA/exec",   // planilha de leads (Apps Script) — dispara só no evento 'lead'
-  checkoutParamName:  "fn",
-  checkoutParamEmail: "em",
-  checkoutParamPhone: "ph",
+  checkoutParamName:  "name",   // Cakto: nome do cliente
+  checkoutParamEmail: "email",  // Cakto: e-mail (quiz não coleta — fica sem efeito)
+  checkoutParamPhone: "phone",  // Cakto: telefone (já enviado com 55 na frente)
   navEventTimeout: 900     // ms máximos que a navegação espera pelo GA4 antes de ir embora assim mesmo
 };
 /* ============================================================ */
